@@ -1,14 +1,99 @@
+
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hello World</title>
+  <title>Real-Time Q&A with Firebase & Claude AI</title>
   <link href='/style.css' rel='stylesheet'>
 </head>
 <body>
-  <h1>Hello, world!</h1>
-  <button onclick="console.log('hello');">Press me</button>
-  <script defer type="text/javascript" src="/main.js"></script>
+  <main>
+    <simple-greeting name="Developer"></simple-greeting>
+    <question-form></question-form>
+    <question-list></question-list>
+    
+    <div class="claude-section">
+      <h2>Ask Claude AI</h2>
+      <p class="claude-subtitle">Your requests are securely handled through a local proxy server.</p>
+      <div id="claude-container">
+        <textarea id="prompt" placeholder="Ask anything..."></textarea>
+        <button id="askClaude">Ask Claude</button>
+        <div id="claudeResponse">
+          <div class="loader" style="display: none;"></div>
+          <pre></pre>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <script>
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      "projectId": "product-builder-code",
+      "appId": "1:574340521439:web:e43248dfcd12480e4f386a",
+      "storageBucket": "product-builder-code.appspot.com",
+      "apiKey": "AIzaSyCYX3OOhXG20kULitY1APHz2OPidI_lA2I",
+      "authDomain": "product-builder-code.firebaseapp.com",
+      "messagingSenderId": "574340521439"
+    };
+
+    // Initialize Firebase
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    } else {
+      firebase.app();
+    }
+    window.db = firebase.firestore();
+  </script>
+  
+  <script type="module" src="/main.js"></script>
+  <script>
+    document.getElementById('askClaude').addEventListener('click', async () => {
+      const prompt = document.getElementById('prompt').value;
+      const responseDiv = document.getElementById('claudeResponse');
+      const responsePre = responseDiv.querySelector('pre');
+      const loader = responseDiv.querySelector('.loader');
+
+      if (!prompt) {
+        responsePre.textContent = 'Please enter a prompt.';
+        return;
+      }
+      
+      loader.style.display = 'block';
+      responsePre.textContent = '';
+
+      try {
+        // The request now goes to our local proxy server instead of directly to Anthropic
+        const response = await fetch('http://localhost:3000/api/claude', {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json'
+          },
+          body: JSON.stringify({ prompt })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(`API Error: ${errorData.error || 'Unknown error'}`)
+        }
+
+        const result = await response.json();
+        const responseText = result.content.map(block => block.text).join('\n');
+        responsePre.textContent = responseText;
+
+      } catch (error) {
+        console.error("Error calling local proxy:", error);
+        responsePre.textContent = `An error occurred: ${error.message}`;
+      } finally {
+        loader.style.display = 'none';
+      }
+    });
+  </script>
 </body>
 </html>
+
