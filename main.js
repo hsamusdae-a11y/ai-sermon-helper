@@ -1,129 +1,119 @@
-document.addEventListener('DOMContentLoaded', () => {
+const apiUrl = "https://ai-sermon-helper-worker.hsamusdae.workers.dev";
+const questionListContainer = document.getElementById("question-list-container");
+const form = document.getElementById("question-form");
+const input = document.getElementById("question-input");
 
-    // --- *** [수정됨] *** 기본 네비게이션 로직 ---
-    const navLinks = document.querySelectorAll('.nav-link');
-    const sections = document.querySelectorAll('section');
-    const mainNavList = document.getElementById('main-nav-list');
+// 헬퍼 함수: 질문 아이템 DOM 생성
+const createQuestionElement = (question) => {
+    const item = document.createElement("div");
+    item.classList.add("question-item");
+    item.dataset.id = question.id;
 
-    // 초기 상태: intro 섹션만 표시
-    sections.forEach(section => {
-        section.style.display = 'none';
-    });
-    document.getElementById('intro').style.display = 'block';
+    const text = document.createElement("span");
+    text.classList.add("question-text");
+    text.textContent = question.text;
 
-    // 네비게이션 클릭 이벤트 처리 (이벤트 위임 사용)
-    mainNavList.addEventListener('click', (event) => {
-        const link = event.target.closest('.nav-link');
-        if (!link) return; // nav-link가 아니면 무시
+    const deleteBtn = document.createElement("button");
+    deleteBtn.classList.add("delete-btn");
+    deleteBtn.innerHTML = "&#128465;"; // 휴지통 아이콘
+    deleteBtn.setAttribute("aria-label", "Delete question");
+    deleteBtn.onclick = () => deleteQuestion(question.id);
 
-        event.preventDefault();
+    item.appendChild(text);
+    item.appendChild(deleteBtn);
+    return item;
+};
+
+// 질문 목록 불러오기
+const fetchQuestions = async () => {
+    try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const questions = await response.json();
+
+        questionListContainer.innerHTML = ""; // 기존 목록 초기화
+        if (questions.length === 0) {
+            questionListContainer.innerHTML = "<p>아직 등록된 질문이 없습니다.</p>";
+        } else {
+            questions.forEach(question => {
+                const questionElement = createQuestionElement(question);
+                questionListContainer.appendChild(questionElement);
+            });
+        }
+    } catch (error) {
+        console.error("Failed to fetch questions:", error);
+        questionListContainer.innerHTML = "<p>질문을 불러오는 데 실패했습니다.</p>";
+    }
+};
+
+// 새 질문 추가
+const addQuestion = async (text) => {
+    try {
+        const response = await fetch(apiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text }),
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         
-        // 모든 링크에서 active 클래스 제거
-        navLinks.forEach(navLink => {
-            navLink.classList.remove('active-nav');
+        // 성공적으로 추가 후, 목록 다시 로드
+        await fetchQuestions();
+    } catch (error) {
+        console.error("Failed to add question:", error);
+        alert("질문 추가에 실패했습니다.");
+    }
+};
+
+// 질문 삭제
+const deleteQuestion = async (id) => {
+    if (!confirm("정말로 이 질문을 삭제하시겠습니까?")) return;
+
+    try {
+        const response = await fetch(`${apiUrl}/${id}`, {
+            method: "DELETE",
         });
 
-        // 클릭된 링크에 active 클래스 추가
-        link.classList.add('active-nav');
-
-        // 모든 섹션 숨기기
-        sections.forEach(section => {
-            section.style.display = 'none';
-        });
-
-        // 대상 섹션 표시
-        const targetSectionId = link.getAttribute('data-section');
-        const targetSection = document.getElementById(targetSectionId);
-        if (targetSection) {
-            targetSection.style.display = 'block';
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        
+        // 화면에서 바로 제거
+        const itemToRemove = document.querySelector(`.question-item[data-id='${id}']`);
+        if (itemToRemove) {
+            itemToRemove.style.animation = 'fadeOut 0.5s ease-out';
+            setTimeout(() => {
+                itemToRemove.remove();
+                 // 목록이 비었는지 확인
+                if (questionListContainer.children.length === 0) {
+                    questionListContainer.innerHTML = "<p>아직 등록된 질문이 없습니다.</p>";
+                }
+            }, 500);
         }
-    });
 
-    // --- 공통 성경 검색 함수 ---
-    async function fetchVerse(query) {
-        const response = await fetch(`https://bible-api.com/${encodeURIComponent(query)}?translation=ko-ge`);
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => null);
-            const errorMessage = errorData?.error || '해당 구절을 찾을 수 없거나 네트워크에 문제가 있습니다.';
-            throw new Error(errorMessage);
-        }
-        const data = await response.json();
-        return `${data.reference}\n${data.text}`.trim();
+    } catch (error) {
+        console.error("Failed to delete question:", error);
+        alert("질문 삭제에 실패했습니다.");
     }
+};
 
-    // --- *** [수정됨] *** 설교 생성기 관련 로직 ---
-    const sermonGeneratorSection = document.getElementById('sermon-generator');
-    if (sermonGeneratorSection) {
-        const verseSearchBtn = sermonGeneratorSection.querySelector('#verseSearchBtn');
-        const verseSearchInput = sermonGeneratorSection.querySelector('#verseSearchInput');
-        const verseSearchResult = sermonGeneratorSection.querySelector('#verseSearchResult');
-        const verseResultText = sermonGeneratorSection.querySelector('#verseResultText');
-        const addVerseBtn = sermonGeneratorSection.querySelector('#addVerseBtn');
-        const sermonVerseText = sermonGeneratorSection.querySelector('#sermonVerseText');
-
-        if (verseSearchBtn) {
-            verseSearchBtn.addEventListener('click', async () => {
-                const query = verseSearchInput.value.trim();
-                if (!query) {
-                    alert('검색할 성경 구절을 입력하세요.');
-                    return;
-                }
-        
-                verseResultText.textContent = '검색 중...';
-                verseSearchResult.style.display = 'block';
-        
-                try {
-                    const result = await fetchVerse(query);
-                    verseResultText.textContent = result;
-                    if(addVerseBtn) addVerseBtn.style.display = 'inline-block';
-                } catch (error) {
-                    console.error("Sermon Gen Bible API Error:", error);
-                    verseResultText.textContent = `오류: ${error.message}`;
-                    if(addVerseBtn) addVerseBtn.style.display = 'none';
-                }
-            });
-        }
-
-        if (addVerseBtn) {
-            addVerseBtn.addEventListener('click', () => {
-                if (!sermonVerseText || !verseResultText) return;
-                const currentText = sermonVerseText.value;
-                const verseToAdd = verseResultText.textContent;
-        
-                if (currentText.trim().length > 0) {
-                    sermonVerseText.value = `${currentText}\n\n${verseToAdd}`;
-                } else {
-                    sermonVerseText.value = verseToAdd;
-                }
-            });
-        }
-    }
-
-    // --- 성구검색 탭 관련 로직 ---
-    const verseSearchSection = document.getElementById('verse-search');
-    if(verseSearchSection) {
-        const mainVerseSearchBtn = verseSearchSection.querySelector('#mainVerseSearchBtn');
-        const mainVerseSearchInput = verseSearchSection.querySelector('#mainVerseSearchInput');
-        const mainVerseSearchResult = verseSearchSection.querySelector('#mainVerseSearchResult');
-
-        if (mainVerseSearchBtn) {
-            mainVerseSearchBtn.addEventListener('click', async () => {
-                const query = mainVerseSearchInput.value.trim();
-                if (!query) {
-                    alert('검색할 성경 구절을 입력하세요. (예: 창세기 1:1)');
-                    return;
-                }
-        
-                mainVerseSearchResult.innerHTML = '<p>검색 중...</p>';
-        
-                try {
-                    const result = await fetchVerse(query);
-                    mainVerseSearchResult.innerHTML = `<pre>${result}</pre>`;
-                } catch (error) {
-                    console.error("Main Bible API Error:", error);
-                    mainVerseSearchResult.innerHTML = `<p style="color: red;">오류: ${error.message}</p>`;
-                }
-            });
-        }
+// 폼 제출 이벤트 리스너
+form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const questionText = input.value.trim();
+    if (questionText) {
+        await addQuestion(questionText);
+        input.value = "";
+        input.focus();
     }
 });
+
+// 초기 질문 목록 로드
+fetchQuestions();
+
+// CSS에 fadeOut 애니메이션 추가
+const styleSheet = document.createElement("style");
+styleSheet.innerText = `
+    @keyframes fadeOut {
+        from { opacity: 1; transform: scale(1); }
+        to { opacity: 0; transform: scale(0.9); }
+    }
+`;
+document.head.appendChild(styleSheet);

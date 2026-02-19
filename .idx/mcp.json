@@ -4,7 +4,8 @@
             "command": "npx",
             "args": [
                 "-y",
-                "firebase-tools@latest"
+                "firebase-tools@latest",
+                "experimental:mcp"
             ]
         }
     }

@@ -1,276 +1,159 @@
-/* 기본 변수 및 전역 스타일 */
 :root {
-    --primary-color: #2c3e50;
-    --accent-color: #5D9CEC;
-    --bg-color-main: #F8F9FA;
-    --text-color: #343A40;
-    --card-bg: #FFFFFF;
-    --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
-    --border-radius: 12px;
+    --primary-color: #3b82f6;
+    --background-color: #f0f4f8;
+    --surface-color: #ffffff;
+    --text-color: #1f2937;
+    --subtle-text-color: #6b7280;
+    --border-color: #e5e7eb;
+    --shadow-color: rgba(0, 0, 0, 0.05);
+    --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
 body {
-    font-family: 'Noto Sans KR', sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: var(--bg-color-main);
+    font-family: var(--font-family);
+    background-color: var(--background-color);
     color: var(--text-color);
-    line-height: 1.8;
+    margin: 0;
+    line-height: 1.6;
 }
 
-/* 헤더 및 네비게이션 */
-header {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    padding: 15px 0;
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: saturate(180%) blur(10px);
-    -webkit-backdrop-filter: saturate(180%) blur(10px);
-    border-bottom: 1px solid rgba(0,0,0,0.05);
+header, footer {
+    text-align: center;
+    padding: 2rem 1rem;
+    background-color: var(--surface-color);
+    border-bottom: 1px solid var(--border-color);
 }
 
-nav {
-    max-width: 1200px;
-    margin: 0 auto;
+header h1 {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin: 0;
+}
+
+header p {
+    font-size: 1.1rem;
+    color: var(--subtle-text-color);
+    max-width: 600px;
+    margin: 0.5rem auto 0;
+}
+
+main {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    display: grid;
+    gap: 2rem;
+}
+
+.form-section, .list-section {
+    background-color: var(--surface-color);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+h2 {
+    font-size: 1.75rem;
+    margin-top: 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--primary-color);
+    display: inline-block;
+}
+
+.input-wrapper {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+}
+
+#question-input {
+    flex-grow: 1;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: box-shadow 0.2s;
+}
+
+#question-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+button[type="submit"] {
+    padding: 0.75rem 1.5rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+button[type="submit"]:hover {
+    background-color: #2563eb;
+}
+
+#question-list-container {
+    margin-top: 1.5rem;
+}
+
+.question-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 25px;
-}
-
-.logo {
-    font-family: 'Noto Serif KR', serif;
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: var(--primary-color);
-}
-
-nav ul { list-style: none; display: flex; margin: 0; padding: 0; }
-nav ul li { margin-left: 25px; }
-nav ul li a {
-    color: #555;
-    text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 500;
-    padding: 5px 0;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    /* 모든 transition 속성 제거 */
-}
-nav ul li a:hover, nav ul li a.active-nav { color: var(--accent-color); }
-
-
-/* 컨테이너 및 섹션: 안정성을 위해 가장 단순한 방식으로 전환 */
-.container {
-    max-width: 1100px;
-    margin: 40px auto;
-    padding: 0 25px;
-}
-
-section {
-    background: var(--card-bg);
-    padding: 35px 40px;
-    border-radius: var(--border-radius);
-    box-shadow: var(--card-shadow);
-    margin-bottom: 40px; /* 겹치지 않도록 margin 추가 */
-    display: none; /* 기본적으로 모든 섹션을 숨김 */
-}
-
-section.active {
-    display: block; /* 활성 섹션만 화면에 표시 */
-}
-
-
-h2 {
-    font-family: 'Noto Serif KR', serif;
-    border-bottom: 3px solid var(--accent-color);
-    padding-bottom: 15px;
-    margin-top: 0;
-    color: var(--primary-color);
-    font-size: 1.8rem;
-}
-h3 {
-    font-family: 'Noto Serif KR', serif;
-    color: var(--primary-color);
-    font-size: 1.5rem;
-}
-
-/* --- 나머지 스타일 (애니메이션 없는 기본 요소) --- */
-
-.content-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 40px;
-    margin-bottom: 30px;
-}
-
-.main-content {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.tool-group label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 500;
-    margin-bottom: 10px;
-    color: var(--primary-color);
-    font-size: 1.1rem;
-}
-
-textarea, input[type="text"] {
-    width: 100%;
-    padding: 15px;
-    border: 1px solid #ccc;
+    padding: 1rem;
     border-radius: 8px;
-    font-size: 1rem;
-    box-sizing: border-box;
-    font-family: 'Noto Sans KR', sans-serif;
+    transition: background-color 0.2s;
+    animation: fadeIn 0.5s ease-out;
 }
 
-textarea:focus, input[type="text"]:focus {
-    outline: none;
-    border-color: var(--accent-color);
-    box-shadow: 0 0 0 3px rgba(93, 156, 236, 0.2);
+.question-item:not(:last-child) {
+    border-bottom: 1px solid var(--border-color);
 }
 
-.search-wrapper {
-    display: flex;
+.question-item:hover {
+    background-color: #f9fafb;
 }
-#verseSearchInput {
+
+.question-text {
     flex-grow: 1;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    border-right: none;
-}
-.btn-icon {
-    border: 1px solid #ccc;
-    background: #f8f9fa;
-    padding: 0 15px;
-    cursor: pointer;
-}
-#verseSearchBtn {
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
+    padding-right: 1rem;
 }
 
-.search-result-box {
-    margin-top: 15px;
-    padding: 15px;
-    background: #f8f9fa;
-    border: 1px solid #e9ecef;
-    border-radius: 8px;
-}
-#verseResultText {
-    margin-top: 0;
-    font-style: italic;
-}
-.btn-small {
-    background: var(--accent-color);
-    color: white;
+.delete-btn {
+    background: none;
     border: none;
-    padding: 8px 15px;
-    border-radius: 6px;
+    color: var(--subtle-text-color);
     cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0.5rem;
+    transition: color 0.2s;
+}
+
+.delete-btn:hover {
+    color: #ef4444; /* red-500 */
+}
+
+footer {
+    margin-top: 3rem;
+    border-top: 1px solid var(--border-color);
+    border-bottom: none;
+    color: var(--subtle-text-color);
     font-size: 0.9rem;
 }
 
-.divider {
-    border: none;
-    height: 1px;
-    background-color: #e9ecef;
-    margin: 40px 0;
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.sermon-generation-area {
-    padding: 25px;
-    background: #fdfdfd;
-    border-radius: var(--border-radius);
-    border: 1px solid #f1f1f1;
-}
-
-.sermon-tool-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 30px;
-    margin-bottom: 30px;
-    align-items: flex-end;
-}
-
-.time-selector { display: flex; gap: 10px; }
-.time-btn {
-    flex-grow: 1;
-    background: #f1f3f5;
-    color: #555;
-    border: 1px solid #ddd;
-    padding: 12px 0;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 500;
-}
-
-.time-btn.active-time {
-    background: var(--accent-color);
-    color: white;
-    border-color: var(--accent-color);
-}
-
-.btn-main {
-    background: var(--accent-color);
-    color: white;
-    border: none;
-    padding: 15px 30px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 1.1rem;
-    font-weight: 500;
-    width: 100%;
-}
-
-.sermon-result {
-    position: relative;
-}
-.btn-copy {
-    position: absolute;
-    top: 0;
-    right: 0;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    color: #555;
-}
-
-.three-point-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 25px;
-    margin-top: 30px;
-}
-
-.point-box {
-    background: #F8F9FA;
-    padding: 25px;
-    border-radius: 10px;
-    border-left: 5px solid var(--accent-color);
-}
-.point-box h4 { margin-top:0; color: var(--primary-color); display: flex; align-items: center; gap: 8px;}
-
-/* 반응형 디자인 */
-@media (max-width: 992px) {
-    .content-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 768px) {
-    nav ul {
-        display: none;
-    }
-    .sermon-tool-grid {
-        grid-template-columns: 1fr;
-    }
+@media (max-width: 600px) {
+    header h1 { font-size: 2rem; }
+    .input-wrapper { flex-direction: column; }
+    button[type="submit"] { width: 100%; }
+    .form-section, .list-section { padding: 1.5rem; }
 }
