@@ -1,154 +1,36 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js';
-import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from 'https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js';
+document.addEventListener('DOMContentLoaded', () => {
 
-// IMPORTANT: Replace with your Firebase project's configuration
-const firebaseConfig = {
-  "projectId": "product-builder-code",
-  "appId": "1:574340521439:web:e43248dfcd12480e4f386a",
-  "storageBucket": "product-builder-code.appspot.com",
-  "apiKey": "AIzaSyCYX3OOhXG20kULitY1APHz2OPidI_lA2I",
-  "authDomain": "product-builder-code.firebaseapp.com",
-  "messagingSenderId": "574340521439"
-};
+    const navLinks = document.querySelectorAll('.nav-link');
+    const sections = document.querySelectorAll('section');
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+    // 네비게이션 링크에 클릭 이벤트 리스너 추가
+    navLinks.forEach(link => {
+        link.addEventListener('click', (event) => {
+            event.preventDefault(); // 기본 a 태그 동작(페이지 이동) 방지
 
-// --- <simple-greeting> Web Component ---
-class SimpleGreeting extends HTMLElement {
-  constructor() {
-    super();
-    const shadow = this.attachShadow({ mode: 'open' });
-    const wrapper = document.createElement('div');
-    wrapper.setAttribute('class', 'greeting-wrapper');
-    const text = document.createElement('p');
-    text.textContent = `Hello, ${this.getAttribute('name') || 'World'}! Ask a question below.`;
-    
-    const style = document.createElement('style');
-    style.textContent = `
-      .greeting-wrapper p {
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: #333;
-        text-align: center;
-      }
-    `;
-    
-    shadow.appendChild(style);
-    shadow.appendChild(wrapper);
-    wrapper.appendChild(text);
-  }
-}
-customElements.define('simple-greeting', SimpleGreeting);
+            const targetSectionId = link.getAttribute('data-section');
 
-// --- <question-form> Web Component ---
-class QuestionForm extends HTMLElement {
-  constructor() {
-    super();
-    this.attachShadow({ mode: 'open' });
-    this.shadowRoot.innerHTML = `
-      <style>
-        form {
-          display: flex;
-          gap: 10px;
-          margin-bottom: 20px;
-        }
-        input {
-          flex-grow: 1;
-          padding: 12px;
-          border: 1px solid #ccc;
-          border-radius: 8px;
-          font-size: 1rem;
-        }
-        button {
-          padding: 12px 20px;
-          border: none;
-          background-color: #007bff;
-          color: white;
-          border-radius: 8px;
-          font-size: 1rem;
-          cursor: pointer;
-          transition: background-color 0.3s;
-        }
-        button:hover {
-          background-color: #0056b3;
-        }
-      </style>
-      <form>
-        <input type="text" placeholder="Type your question..." required />
-        <button type="submit">Ask</button>
-      </form>
-    `;
+            // 1. 모든 섹션을 숨기고 모든 링크의 활성 클래스를 제거합니다.
+            sections.forEach(section => {
+                section.style.display = 'none';
+            });
+            navLinks.forEach(navLink => {
+                navLink.classList.remove('active-nav');
+            });
 
-    this.form = this.shadowRoot.querySelector('form');
-    this.input = this.shadowRoot.querySelector('input');
-  }
-
-  connectedCallback() {
-    this.form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const questionText = this.input.value.trim();
-      if (questionText) {
-        try {
-          await addDoc(collection(db, 'questions'), {
-            text: questionText,
-            timestamp: serverTimestamp(),
-          });
-          this.input.value = '';
-        } catch (error) {
-          console.error("Error adding document: ", error);
-        }
-      }
+            // 2. 목표 섹션만 보여주고 해당 링크에 활성 클래스를 추가합니다.
+            const targetSection = document.getElementById(targetSectionId);
+            if (targetSection) {
+                targetSection.style.display = 'block';
+            }
+            link.classList.add('active-nav');
+        });
     });
-  }
-}
-customElements.define('question-form', QuestionForm);
 
-// --- <question-list> Web Component ---
-class QuestionList extends HTMLElement {
-  constructor() {
-    super();
-    this.attachShadow({ mode: 'open' });
-    this.shadowRoot.innerHTML = `
-      <style>
-        h2 {
-            text-align: center;
-            color: #444;
-        }
-        .question-list-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .question-item {
-            padding: 15px;
-            background-color: #f9f9f9;
-            border: 1px solid #eee;
-            border-radius: 8px;
-        }
-      </style>
-      <h2>Questions</h2>
-      <div class="question-list-container"></div>
-    `;
-    this.container = this.shadowRoot.querySelector('.question-list-container');
-  }
+    // 페이지 로드 시 기본적으로 '소개' 섹션을 보여줍니다.
+    const introSection = document.getElementById('intro');
+    if(introSection) {
+        introSection.style.display = 'block';
+    }
 
-  connectedCallback() {
-    const q = query(collection(db, 'questions'), orderBy('timestamp', 'desc'));
-    onSnapshot(q, (snapshot) => {
-      this.renderQuestions(snapshot.docs);
-    });
-  }
-
-  renderQuestions(docs) {
-    this.container.innerHTML = '';
-    docs.forEach(doc => {
-      const item = document.createElement('div');
-      item.className = 'question-item';
-      item.textContent = doc.data().text;
-      this.container.appendChild(item);
-    });
-  }
-}
-customElements.define('question-list', QuestionList);
+});
