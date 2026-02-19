@@ -37,7 +37,75 @@
         <!-- 설교 생성기 섹션 -->
         <section id="sermon-generator">
             <h2><i class="fas fa-tools"></i> 설교 개요 생성</h2>
-            <p>이곳에서 AI를 통해 설교 개요를 생성합니다.</p>
+             <div class="sermon-generation-area">
+                <div class="sermon-tool-grid">
+                    <!-- 1. 주제 입력 -->
+                    <div class="tool-group">
+                        <label for="sermonTopic"><i class="fas fa-book-open"></i> 1. 설교 주제</label>
+                        <input type="text" id="sermonTopic" placeholder="예: 믿음, 소망, 사랑">
+                    </div>
+
+                    <!-- 2. 시간 선택 -->
+                    <div class="tool-group">
+                        <label><i class="far fa-clock"></i> 2. 설교 시간 (분)</label>
+                        <div class="time-selector">
+                            <button class="time-btn" data-time="5">5분</button>
+                            <button class="time-btn active-time" data-time="10">10분</button>
+                            <button class="time-btn" data-time="30">30분</button>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="divider">
+
+                <!-- 3. 본문 입력 및 검색 -->
+                <div class="content-grid">
+                    <div class="main-content">
+                        <div class="tool-group">
+                            <label for="sermonVerseText"><i class="fas fa-bible"></i> 3. 핵심 성경 구절</label>
+                            <textarea id="sermonVerseText" rows="8" placeholder="핵심 성경 구절을 직접 입력하거나, 오른쪽에서 검색하여 추가하세요."></textarea>
+                        </div>
+                    </div>
+                    <aside class="sidebar">
+                        <div class="tool-group">
+                            <label for="verseSearchInput"><i class="fas fa-search"></i> 성경 구절 검색</label>
+                            <div class="search-wrapper">
+                                <input type="text" id="verseSearchInput" placeholder="예: 요한복음 3:16">
+                                <button id="verseSearchBtn" class="btn-icon"><i class="fas fa-arrow-right"></i></button>
+                            </div>
+                        </div>
+                        <div class="search-result-box" id="verseSearchResult" style="display: none;">
+                            <p id="verseResultText"></p>
+                            <button id="addVerseBtn" class="btn-small">본문에 추가</button>
+                        </div>
+                    </aside>
+                </div>
+
+                <hr class="divider">
+
+                <!-- 4. 생성 버튼 -->
+                <button id="generateSermonBtn" class="btn-main"><i class="fas fa-magic"></i> AI로 설교 개요 생성하기</button>
+            </div>
+            
+            <!-- 결과 표시 영역 -->
+            <div id="resultArea" class="sermon-result" style="display:none;">
+                <button id="copySermonBtn" class="btn-small btn-copy"><i class="far fa-copy"></i> 전체 복사</button>
+                <h3 id="generatedTitle"></h3>
+                <div class="three-point-grid">
+                    <div class="point-box">
+                        <h4><i class="fas fa-door-open"></i> 서론</h4>
+                        <p id="p1"></p>
+                    </div>
+                    <div class="point-box">
+                        <h4><i class="fas fa-list-ol"></i> 본론</h4>
+                        <p id="p2"></p>
+                    </div>
+                    <div class="point-box">
+                        <h4><i class="fas fa-flag-checkered"></i> 결론</h4>
+                        <p id="p3"></p>
+                    </div>
+                </div>
+            </div>
         </section>
         
         <!-- 설교 노트 섹션 -->
@@ -55,7 +123,11 @@
         <!-- 성구검색 섹션 -->
         <section id="verse-search">
             <h2><i class="fas fa-search"></i> 성구검색</h2>
-            <p>특정 성경 구절을 검색하는 기능입니다. (기능 개발 예정)</p>
+            <div class="search-container">
+                <input type="text" id="mainVerseSearchInput" placeholder="성경 구절 입력 (예: 창세기 1:1)">
+                <button id="mainVerseSearchBtn" class="btn-main">검색</button>
+            </div>
+            <div id="mainVerseSearchResult" class="search-result-display"></div>
         </section>
 
         <!-- 단어검색 섹션 -->

@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- 설교 생성기 관련 로직 ---
+    // --- 설교 생성기 관련 로직 (작은 검색) ---
     const verseSearchBtn = document.getElementById('verseSearchBtn');
     const verseSearchInput = document.getElementById('verseSearchInput');
     const verseSearchResult = document.getElementById('verseSearchResult');
@@ -28,52 +28,82 @@ document.addEventListener('DOMContentLoaded', () => {
     const addVerseBtn = document.getElementById('addVerseBtn');
     const sermonVerseText = document.getElementById('sermonVerseText');
 
-    // 성경 구절 검색 버튼 클릭 이벤트
-    verseSearchBtn.addEventListener('click', async () => {
-        const query = verseSearchInput.value.trim();
-        if (!query) {
-            alert('검색할 성경 구절을 입력하세요. (예: 요한복음 3:16)');
-            return;
+    // 공통 검색 함수
+    async function fetchVerse(query) {
+        const response = await fetch(`https://bible-api.com/${encodeURIComponent(query)}?translation=ko-ge`);
+        if (!response.ok) {
+            throw new Error('해당 구절을 찾을 수 없거나 네트워크에 문제가 발생했습니다.');
         }
+        const data = await response.json();
+        return `${data.reference}\n${data.text}`.trim();
+    }
 
-        verseResultText.textContent = '검색 중...';
-        verseSearchResult.style.display = 'block';
-
-        try {
-            // bible-api.com API 호출
-            const response = await fetch(`https://bible-api.com/${encodeURIComponent(query)}?translation=ko-ge`);
-            
-            if (!response.ok) {
-                throw new Error('해당 구절을 찾을 수 없거나 네트워크에 문제가 발생했습니다.');
+    if(verseSearchBtn) {
+        verseSearchBtn.addEventListener('click', async () => {
+            const query = verseSearchInput.value.trim();
+            if (!query) {
+                alert('검색할 성경 구절을 입력하세요.');
+                return;
             }
+    
+            verseResultText.textContent = '검색 중...';
+            verseSearchResult.style.display = 'block';
+    
+            try {
+                const result = await fetchVerse(query);
+                verseResultText.textContent = result;
+                addVerseBtn.style.display = 'inline-block';
+            } catch (error) {
+                console.error("Bible API Error:", error);
+                verseResultText.textContent = `오류: ${error.message}`;
+                addVerseBtn.style.display = 'none';
+            }
+        });
+    }
 
-            const data = await response.json();
+    if(addVerseBtn) {
+        addVerseBtn.addEventListener('click', () => {
+            const currentText = sermonVerseText.value;
+            const verseToAdd = verseResultText.textContent;
+    
+            if (currentText.trim().length > 0) {
+                sermonVerseText.value = `${currentText}\n\n${verseToAdd}`;
+            } else {
+                sermonVerseText.value = verseToAdd;
+            }
+        });
+    }
 
-            // 성공적으로 데이터를 받으면 결과 텍스트를 채웁니다.
-            verseResultText.textContent = `${data.reference}\n${data.text}`.trim();
-            addVerseBtn.style.display = 'inline-block'; // 추가 버튼 표시
+    // --- 성구검색 탭 관련 로직 (메인 검색) ---
+    const mainVerseSearchBtn = document.getElementById('mainVerseSearchBtn');
+    const mainVerseSearchInput = document.getElementById('mainVerseSearchInput');
+    const mainVerseSearchResult = document.getElementById('mainVerseSearchResult');
 
-        } catch (error) {
-            console.error("Bible API Error:", error);
-            verseResultText.textContent = `오류: ${error.message}`;
-            addVerseBtn.style.display = 'none'; // 에러 시 추가 버튼 숨김
-        }
-    });
-
-    // 본문에 추가 버튼 클릭 이벤트
-    addVerseBtn.addEventListener('click', () => {
-        const currentText = sermonVerseText.value;
-        const verseToAdd = verseResultText.textContent;
-
-        // 이미 텍스트가 있으면 줄바꿈 후 추가, 없으면 그냥 추가
-        if (currentText.trim().length > 0) {
-            sermonVerseText.value = `${currentText}\n\n${verseToAdd}`;
-        } else {
-            sermonVerseText.value = verseToAdd;
-        }
-    });
+    if(mainVerseSearchBtn) {
+        mainVerseSearchBtn.addEventListener('click', async () => {
+            const query = mainVerseSearchInput.value.trim();
+            if (!query) {
+                alert('검색할 성경 구절을 입력하세요. (예: 창세기 1:1)');
+                return;
+            }
+    
+            mainVerseSearchResult.innerHTML = '<p>검색 중...</p>';
+    
+            try {
+                const result = await fetchVerse(query);
+                // 결과를 pre 태그로 감싸서 줄바꿈을 유지하도록 합니다.
+                mainVerseSearchResult.innerHTML = `<pre>${result}</pre>`;
+            } catch (error) {
+                console.error("Bible API Error:", error);
+                mainVerseSearchResult.innerHTML = `<p style="color: red;">오류: ${error.message}</p>`;
+            }
+        });
+    }
 
 
     // --- 페이지 로드 시 초기 상태 설정 ---
-    document.getElementById('intro').style.display = 'block';
+    const introSection = document.getElementById('intro');
+    if (introSection) {
+        introSection.style.display = 'block';
+    }
 });
